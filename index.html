@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizaciones del Dólar y Otros</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Definición de variables CSS para los temas */
+        :root {
+            /* Modo Claro */
+            --bg-color: #e2e8f0; /* Soft gray-200 */
+            --text-color: #334155; /* Slate-700 for general text */
+            --card-bg: #ffffff;
+            --card-border: #cbd5e1; /* Subtle border */
+            --header-gradient-start: #06b6d4; /* Cyan-500 */
+            --header-gradient-end: #3b82f6; /* Blue-500 */
+            --skeleton-bg-start: #f0f0f0;
+            --skeleton-bg-mid: #e0e0e0;
+            --info-banner-bg: #fffbeb; /* Yellow-50 */
+            --info-banner-border: #facc15; /* Yellow-400 */
+            --info-banner-text: #b45309; /* Yellow-800 */
+            --info-banner-icon: #f59e0b; /* Yellow-600 */
+        }
+
+        body.dark-mode {
+            /* Modo Oscuro */
+            --bg-color: #1a202c; /* Dark slate-900 */
+            --text-color: #e2e8f0; /* Light gray-200 */
+            --card-bg: #2d3748; /* Darker slate-800 for cards */
+            --card-border: #4a5568; /* Subtle dark border slate-600 */
+            --header-gradient-start: #1f2937; /* Darker blue-gray-800 */
+            --header-gradient-end: #4b0082; /* Darker purple */
+            --skeleton-bg-start: #374151; /* Darker gray for skeleton */
+            --skeleton-bg-mid: #4a5568; /* Mid gray for skeleton */
+            --info-banner-bg: #4a5568; /* Slate-700 */
+            --info-banner-border: #6366f1; /* Indigo-500 */
+            --info-banner-text: #e2e8f0; /* Light gray-200 */
+            --info-banner-icon: #818cf8; /* Indigo-300 */
+        }
+
+        /* Aplicación de variables CSS */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            margin: auto;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--card-border);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .header-bg {
+            background: linear-gradient(to right bottom, var(--header-gradient-start), var(--header-gradient-end));
+            animation: gradientShift 10s ease infinite;
+            background-size: 200% 200%;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .positive {
+            color: #22c55e; /* green-500 */
+            font-weight: 600;
+        }
+        .negative {
+            color: #ef4444; /* red-500 */
+            font-weight: 600;
+        }
+        .neutral {
+            color: #6b7280; /* gray-500 */
+            font-weight: 600;
+        }
+        .skeleton-price, .skeleton-change {
+            background: linear-gradient(90deg, var(--skeleton-bg-start) 25%, var(--skeleton-bg-mid) 50%, var(--skeleton-bg-start) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 0.5rem;
+        }
+        .skeleton-price {
+            height: 3rem;
+            width: 80%;
+            margin: 0.5rem auto;
+        }
+        .skeleton-change {
+            height: 1.2rem;
+            width: 50%;
+            margin: 0.25rem auto;
+        }
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+        footer {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--card-border); /* Use card border for footer separator */
+            width: 100%;
+            color: var(--text-color); /* Ensure footer text adapts */
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        /* Info banner styling for dark mode */
+        .info-banner {
+            background-color: var(--info-banner-bg);
+            border-left-color: var(--info-banner-border);
+            color: var(--info-banner-text);
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        .info-banner svg {
+            color: var(--info-banner-icon);
+            transition: color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+    <div class="container">
+        <div class="header-bg text-white p-6 rounded-2xl shadow-xl mb-8 text-center relative overflow-hidden">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-2 leading-tight">Cotizaciones del Mercado 💵</h1>
+            <p class="text-lg sm:text-xl opacity-90">Valores de referencia y cambios diarios (datos simulados)</p>
+            <!-- Subtle background shapes -->
+            <div class="absolute top-0 left-0 w-24 h-24 bg-white bg-opacity-10 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full blur-xl transform translate-x-1/2 translate-y-1/2"></div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+            <button id="refreshButton" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+                Actualizar Cotizaciones
+            </button>
+            <button id="themeToggle" class="w-full sm:w-auto bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-75">
+                Modo Oscuro
+            </button>
+            <p id="last-updated" class="text-center text-gray-600 text-sm"></p>
+        </div>
+
+        <div id="quotes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Quotes will be dynamically loaded here -->
+        </div>
+
+        <div class="info-banner border-l-4 p-4 rounded-lg flex items-center shadow-md mb-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p class="font-medium">Los datos mostrados son **simulados** y no reflejan valores de mercado reales. Para información real, se requiere integrar APIs de terceros.</p>
+        </div>
+
+        <footer class="text-center text-sm py-4">
+            <p>&copy; 2025 Cotizaciones del Dólar y Otros. Todos los derechos reservados.</p>
+            <p class="mt-1">Desarrollado con fines educativos y de demostración.</p>
+        </footer>
+    </div>
+
+    <script>
+        const quotesGrid = document.getElementById('quotes-grid');
+        const lastUpdatedElement = document.getElementById('last-updated');
+        const refreshButton = document.getElementById('refreshButton');
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // *** CONFIGURACIÓN DE API KEYS ***
+        // Reemplaza los valores de las API keys con tus propias claves reales.
+        // Si no tienes una API Key para un servicio, déjala como una cadena vacía.
+        // ADVERTENCIA: En una aplicación de producción, las API keys NUNCA deben estar directamente en el código del lado del cliente.
+        // Se recomienda usar un servidor backend para gestionar las llamadas a la API de forma segura.
+        const apiKeys = {
+            currencyApi: "", 
+            cryptoApi: "",
+        };
+
+        // Function to generate a random number with two decimal places for simulating prices
+        function getRandomPrice(min, max) {
+            return (Math.random() * (max - min) + min).toFixed(2);
+        }
+
+        // Function to generate a random percentage change
+        function getRandomChange() {
+            const change = (Math.random() * 5 - 2.5).toFixed(2); // between -2.5% and +2.5%
+            return {
+                value: change,
+                class: change > 0 ? 'positive' : (change < 0 ? 'negative' : 'neutral'),
+                icon: change > 0 ? '▲' : (change < 0 ? '▼' : '▬')
+            };
+        }
+
+        // --- FUNCIONES PARA OBTENER DATOS REALES (PLACEHOLDERS) ---
+        async function fetchRealCurrencies() {
+            let quotes = [];
+            if (apiKeys.currencyApi) {
+                try {
+                    // *** TU CÓDIGO PARA LLAMAR A LA API DE DIVISAS AQUÍ ***
+                    // Ejemplo:
+                    // const response = await fetch(`https://api.dolarapi.com.ar/v1/dolar?apikey=${apiKeys.currencyApi}`);
+                    // const data = await response.json();
+                    // quotes.push({ 
+                    //     id: 'dolar-blue', 
+                    //     name: 'Dólar Blue', 
+                    //     price: parseFloat(data.blue.venta).toFixed(2), 
+                    //     currencySymbol: '$', 
+                    //     change: getRandomChange() // Calcula el cambio si la API lo provee
+                    // });
+                    console.log("Intentando obtener datos reales de divisas. Por ahora, usando simulados.");
+                } catch (error) {
+                    console.error("Error fetching real currency data:", error);
+                }
+            }
+            // Fallback a datos simulados si la API no se usa o falla
+            const simulatedData = getSimulatedQuotes();
+            return quotes.length > 0 ? quotes : [
+                simulatedData.find(q => q.id === 'dolar-blue'),
+                simulatedData.find(q => q.id === 'dolar-oficial-compra'),
+                simulatedData.find(q => q.id === 'dolar-oficial-venta'),
+                simulatedData.find(q => q.id === 'dolar-mep'),
+                simulatedData.find(q => q.id === 'euro-oficial'),
+                simulatedData.find(q => q.id === 'euro-blue'),
+            ].filter(Boolean);
+        }
+
+        async function fetchRealCryptocurrencies() {
+            let quotes = [];
+            if (apiKeys.cryptoApi) {
+                try {
+                    // *** TU CÓDIGO PARA LLAMAR A LA API DE CRIPTOMONEDAS AQUÍ ***
+                    // Ejemplo:
+                    // const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=ars&apikey=${apiKeys.cryptoApi}`);
+                    // const data = await response.json();
+                    // quotes.push({
+                    //     id: 'bitcoin',
+                    //     name: 'Bitcoin',
+                    //     price: data.bitcoin.ars.toFixed(2),
+                    //     currencySymbol: '$',
+                    //     change: getRandomChange()
+                    // });
+                    console.log("Intentando obtener datos reales de criptomonedas. Por ahora, usando simulados.");
+                } catch (error) {
+                    console.error("Error fetching real crypto data:", error);
+                }
+            }
+            // Fallback a datos simulados si la API no se usa o falla
+            const simulatedData = getSimulatedQuotes();
+            return quotes.length > 0 ? quotes : [
+                simulatedData.find(q => q.id === 'bitcoin'),
+                simulatedData.find(q => q.id === 'ethereum'),
+            ].filter(Boolean);
+        }
+
+        // Function to get simulated quote data for all listed assets (as fallback)
+        function getSimulatedQuotes() {
+            return [
+                { id: 'dolar-blue', name: 'Dólar Blue', price: getRandomPrice(1200, 1350), currencySymbol: '$' },
+                { id: 'dolar-oficial-compra', name: 'Dólar Oficial (Compra)', price: getRandomPrice(850, 900), currencySymbol: '$' },
+                { id: 'dolar-oficial-venta', name: 'Dólar Oficial (Venta)', price: getRandomPrice(890, 940), currencySymbol: '$' },
+                { id: 'dolar-mep', name: 'Dólar MEP', price: getRandomPrice(1220, 1370), currencySymbol: '$' },
+                { id: 'euro-oficial', name: 'Euro Oficial', price: getRandomPrice(920, 980), currencySymbol: '$' },
+                { id: 'euro-blue', name: 'Euro Blue', price: getRandomPrice(1300, 1450), currencySymbol: '$' },
+                { id: 'bitcoin', name: 'Bitcoin', price: getRandomPrice(60000000, 75000000), currencySymbol: '$' },
+                { id: 'ethereum', name: 'Ethereum', price: getRandomPrice(3000000, 4000000), currencySymbol: '$' },
+            ].map(item => ({ ...item, change: getRandomChange() }));
+        }
+
+        // Function to create a quote card HTML string
+        function createQuoteCard(quote) {
+            return `
+                <div id="card-${quote.id}" class="card p-4 text-center">
+                    <h2 class="text-xl font-bold mb-2">${quote.name}</h2>
+                    <p class="text-4xl font-extrabold">${quote.currencySymbol}${quote.price}</p>
+                    <p class="text-lg mt-1 flex items-center justify-center ${quote.change.class}">
+                        <span class="mr-1 text-xl">${quote.change.icon}</span> <span class="text-current">${quote.change.value}%</span>
+                    </p>
+                </div>
+            `;
+        }
+
+        // Function to display loading skeletons for all quotes
+        function showLoadingSkeletons() {
+            quotesGrid.innerHTML = ''; // Clear existing content
+            const numberOfQuotes = getSimulatedQuotes().length; 
+            for (let i = 0; i < numberOfQuotes; i++) {
+                quotesGrid.innerHTML += `
+                    <div class="card p-4 text-center animate-pulse">
+                        <div class="h-6 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+                        <div class="skeleton-price"></div>
+                        <div class="skeleton-change"></div>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to fetch and render all quotes (now attempts real APIs, falls back to simulated)
+        async function fetchAndRenderAllQuotes() {
+            showLoadingSkeletons(); // Show loading state for all cards
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1200)); 
+
+                const currencyQuotes = await fetchRealCurrencies();
+                const cryptoQuotes = await fetchRealCryptocurrencies();
+                
+                const allQuotesData = [...currencyQuotes, ...cryptoQuotes];
+
+                quotesGrid.innerHTML = ''; // Clear skeletons once data is ready
+
+                allQuotesData.forEach(quote => {
+                    quotesGrid.insertAdjacentHTML('beforeend', createQuoteCard(quote));
+                });
+
+                const now = new Date();
+                lastUpdatedElement.textContent = `Última actualización: ${now.toLocaleDateString('es-AR')} ${now.toLocaleTimeString('es-AR')}`;
+
+            } catch (error) {
+                console.error("Error al obtener las cotizaciones:", error);
+                quotesGrid.innerHTML = `
+                    <div class="col-span-full info-banner border-l-4 p-4 rounded-lg flex items-center shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="font-medium">¡Error al cargar las cotizaciones! Inténtalo de nuevo más tarde.</p>
+                    </div>
+                `;
+                lastUpdatedElement.textContent = 'Error al cargar los datos.';
+            }
+        }
+
+        // --- Theme Toggle Logic ---
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+                themeToggle.textContent = 'Modo Claro';
+            } else {
+                body.classList.remove('dark-mode');
+                themeToggle.textContent = 'Modo Oscuro';
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme === 'dark') {
+                applyTheme('light');
+            } else {
+                applyTheme('dark');
+            }
+        });
+
+        // Event listener for the refresh button
+        refreshButton.addEventListener('click', fetchAndRenderAllQuotes);
+
+        // Initial load when the page is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(savedTheme);
+            fetchAndRenderAllQuotes();
+        });
+    </script>
+</body>
+</html>
